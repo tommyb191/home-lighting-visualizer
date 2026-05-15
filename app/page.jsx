@@ -14,6 +14,7 @@ export default function HomeLightingVisualizer() {
   const [sliderPos, setSliderPos] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
+  const [emailDebug, setEmailDebug] = useState(null);
   const sliderRef = useRef(null);
 
   const handleFileSelect = (e) => {
@@ -66,6 +67,7 @@ export default function HomeLightingVisualizer() {
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || 'Generation failed');
       setGeneratedImage(data.generatedImage);
+      setEmailDebug(data.emailDebug || null);
       setStep('result');
     } catch (err) {
       console.error(err);
@@ -381,6 +383,13 @@ export default function HomeLightingVisualizer() {
             <button onClick={reset} className="sans text-sm text-slate-500 hover:text-slate-300 mt-10 mx-auto block transition-colors">
               Try another photo →
             </button>
+
+            {emailDebug && (
+              <div className="mt-10 max-w-2xl mx-auto p-5 border border-amber-200/30 bg-slate-900/60 rounded-sm">
+                <p className="sans text-xs tracking-[0.2em] uppercase text-amber-200/70 mb-3">🔧 Email Debug (temporary)</p>
+                <pre className="sans text-xs text-slate-300 whitespace-pre-wrap break-all overflow-auto">{JSON.stringify(emailDebug, null, 2)}</pre>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -410,3 +419,4 @@ function Field({ icon, label, value, onChange, type = 'text', error }) {
     </div>
   );
 }
+
