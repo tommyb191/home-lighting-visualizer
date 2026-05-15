@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { Resend } from 'resend';
-
+ 
 export const maxDuration = 60;
-
+ 
 const LIGHTING_PROMPT = `Transform this daytime photograph of a home into the exact same home at night, professionally illuminated by high-end exterior landscape lighting. Moody, atmospheric, elegant — like a luxury real estate photograph taken at 9pm.
-
+ 
 EXTERIOR LANDSCAPE LIGHTING — apply this evenly across the ENTIRE width of the home:
 - WARM UPLIGHTING along the FULL facade: place uplights at the base of the house at regular, evenly-spaced intervals across the entire front of the home from far left to far right. EVERY section of the facade should receive uplighting — including between every set of windows, at every corner, and along every wall. Do not leave any section of the facade in darkness.
 - BETWEEN-WINDOW UPLIGHTING: specifically, place uplights in every gap between windows on both floors so the brick/siding glows warmly in those spaces
 - PATH LIGHTING: small warm pools of light at regular intervals along all visible walkways, driveways, and garden paths
 - TREE LIGHTING: subtle warm uplights at the base of any trees, with gentle "moonlighting" from above casting soft dappled shadows
 - SHRUB AND PLANTING ACCENT LIGHTS: warm spots highlighting the foundation plantings and garden beds at the base of the home
-
+ 
 WINDOWS, DOORS, AND INTERIOR — VERY IMPORTANT, FOLLOW STRICTLY:
 - Nearly all windows should be DARK or nearly dark — as if the rooms are unoccupied
 - ONLY 1-2 windows total across the entire home should show a faint, dim warm glow — and even those should be muted, subtle, barely noticeable
@@ -23,19 +23,19 @@ WINDOWS, DOORS, AND INTERIOR — VERY IMPORTANT, FOLLOW STRICTLY:
 - The right side of the home should have the SAME interior darkness as the left side — both sides must be balanced and equally dim inside
 - If you find yourself making a window "lit," ask yourself if it's necessary — the default answer is NO, keep it dark
 - The HOME'S BRIGHTNESS comes ENTIRELY from EXTERIOR landscape lighting hitting the facade — NOT from interior light bleeding out
-
+ 
 BALANCE AND SYMMETRY:
 - The left side and right side of the home must receive EQUAL exterior landscape lighting
 - No section of the facade should be brighter than another
 - The overall lighting should feel cohesive, professional, and intentional — like a single designer planned the entire layout
-
+ 
 SKY AND ATMOSPHERE:
 - DEEP NIGHT SKY: dark navy fading to nearly black, with a subtle gradient
 - Late evening — well after dusk, not twilight or blue hour
 - A few faint stars may be visible
 - Areas not directly hit by landscape lighting should fall into rich, atmospheric darkness
 - Strong contrast between the warmly lit zones and the darker surroundings
-
+ 
 CRITICAL CONSTRAINTS:
 - Do NOT alter the home's structure, materials, paint color, brick, siding, roof, windows, doors, or landscaping
 - Do NOT add or remove any architectural features, signs, or text
@@ -45,24 +45,24 @@ CRITICAL CONSTRAINTS:
 - Photorealistic, professional architectural photography aesthetic
 - Warm color temperature (2700K-3000K) for all landscape lighting
 - Restrained and tasteful — NOT theatrical, NOT theme-park, NOT a Christmas display, NOT a Las Vegas casino`;
-
+ 
 export async function POST(req) {
   try {
     const { image, name, email, phone } = await req.json();
-
+ 
     if (!image || !name || !email || !phone) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-
+ 
     const base64Match = image.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
     if (!base64Match) {
       return NextResponse.json({ error: 'Invalid image format' }, { status: 400 });
     }
     const mimeType = base64Match[1];
     const imageData = base64Match[2];
-
+ 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
+ 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: [
@@ -75,7 +75,7 @@ export async function POST(req) {
         },
       ],
     });
-
+ 
     let generatedBase64 = null;
     let generatedMimeType = 'image/png';
     const parts = response?.candidates?.[0]?.content?.parts || [];
@@ -86,31 +86,39 @@ export async function POST(req) {
         break;
       }
     }
-
+ 
     if (!generatedBase64) {
       console.error('No image returned from Gemini', JSON.stringify(response, null, 2));
       return NextResponse.json({ error: 'Image generation failed' }, { status: 500 });
     }
-
+ 
     const generatedDataUrl = `data:${generatedMimeType};base64,${generatedBase64}`;
-
-    sendEmails({
-      name,
-      email,
-      phone,
-      originalImageBase64: imageData,
-      originalMimeType: mimeType,
-      generatedImageBase64: generatedBase64,
-      generatedMimeType,
-    }).catch((err) => console.error('Email send failed:', err));
-
-    return NextResponse.json({ generatedImage: generatedDataUrl });
+ 
+    // Try to send emails and capture any errors so we can see them
+    let emailDebug = { attempted: false, customerSent: false, businessSent: false, error: null };
+    try {
+      emailDebug = await sendEmails({
+        name,
+        email,
+        phone,
+        originalImageBase64: imageData,
+        originalMimeType: mimeType,
+        generatedImageBase64: generatedBase64,
+        generatedMimeType,
+      });
+    } catch (err) {
+      console.error('EMAIL ERROR:', err);
+      emailDebug.error = err.message || String(err);
+    }
+    console.log('EMAIL DEBUG:', JSON.stringify(emailDebug));
+ 
+    return NextResponse.json({ generatedImage: generatedDataUrl, emailDebug });
   } catch (err) {
     console.error('Generate route error:', err);
     return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 });
   }
 }
-
+ 
 async function sendEmails({
   name,
   email,
@@ -120,20 +128,34 @@ async function sendEmails({
   generatedImageBase64,
   generatedMimeType,
 }) {
+  const debug = {
+    attempted: true,
+    hasResendKey: !!process.env.RESEND_API_KEY,
+    resendKeyPrefix: process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.substring(0, 6) : 'MISSING',
+    fromEmail: process.env.FROM_EMAIL || 'onboarding@resend.dev',
+    businessEmail: process.env.BUSINESS_EMAIL || 'MISSING',
+    customerSent: false,
+    customerResult: null,
+    businessSent: false,
+    businessResult: null,
+    error: null,
+  };
+ 
   if (!process.env.RESEND_API_KEY) {
-    console.warn('RESEND_API_KEY not set — skipping emails');
-    return;
+    debug.error = 'RESEND_API_KEY environment variable is not set in Vercel';
+    console.warn(debug.error);
+    return debug;
   }
-
+ 
   const resend = new Resend(process.env.RESEND_API_KEY);
   const fromEmail = process.env.FROM_EMAIL || 'onboarding@resend.dev';
   const businessEmail = process.env.BUSINESS_EMAIL;
   const businessName = process.env.BUSINESS_NAME || 'Phantom';
   const businessWebsite = process.env.BUSINESS_WEBSITE || 'https://phantomsound.com/start-a-project/';
-
+ 
   const originalExt = originalMimeType.split('/')[1] || 'jpg';
   const generatedExt = generatedMimeType.split('/')[1] || 'png';
-
+ 
   const customerEmailHtml = `
 <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #050a14; color: #ffffff; padding: 40px 30px;">
   <h1 style="font-weight: 300; font-size: 32px; margin: 0 0 8px 0; color: #ffffff;">
@@ -161,20 +183,28 @@ async function sendEmails({
     This is an AI-generated preview. Real lighting design will be customized to your home's architecture, landscape, and your personal preferences.
   </p>
 </div>`;
-
-  await resend.emails.send({
-    from: `${businessName} <${fromEmail}>`,
-    to: email,
-    subject: 'Your home, illuminated ✨',
-    html: customerEmailHtml,
-    attachments: [
-      {
-        filename: `your-home-illuminated.${generatedExt}`,
-        content: generatedImageBase64,
-      },
-    ],
-  });
-
+ 
+  try {
+    const customerResult = await resend.emails.send({
+      from: `${businessName} <${fromEmail}>`,
+      to: email,
+      subject: 'Your home, illuminated ✨',
+      html: customerEmailHtml,
+      attachments: [
+        {
+          filename: `your-home-illuminated.${generatedExt}`,
+          content: generatedImageBase64,
+        },
+      ],
+    });
+    debug.customerSent = !customerResult.error;
+    debug.customerResult = customerResult.error ? JSON.stringify(customerResult.error) : 'success: ' + (customerResult.data?.id || 'no id');
+    console.log('CUSTOMER EMAIL RESULT:', JSON.stringify(customerResult));
+  } catch (err) {
+    debug.customerResult = 'EXCEPTION: ' + (err.message || String(err));
+    console.error('CUSTOMER EMAIL EXCEPTION:', err);
+  }
+ 
   if (businessEmail) {
     const leadEmailHtml = `
 <div style="font-family: -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -190,26 +220,36 @@ async function sendEmails({
     <strong>Next step:</strong> Call or email within 24 hours while they're still excited about the preview.
   </div>
 </div>`;
-
-    await resend.emails.send({
-      from: `Lead Bot <${fromEmail}>`,
-      to: businessEmail,
-      subject: `🏡 New lead: ${name} (${phone})`,
-      html: leadEmailHtml,
-      attachments: [
-        {
-          filename: `original.${originalExt}`,
-          content: originalImageBase64,
-        },
-        {
-          filename: `generated.${generatedExt}`,
-          content: generatedImageBase64,
-        },
-      ],
-    });
+ 
+    try {
+      const businessResult = await resend.emails.send({
+        from: `Lead Bot <${fromEmail}>`,
+        to: businessEmail,
+        subject: `🏡 New lead: ${name} (${phone})`,
+        html: leadEmailHtml,
+        attachments: [
+          {
+            filename: `original.${originalExt}`,
+            content: originalImageBase64,
+          },
+          {
+            filename: `generated.${generatedExt}`,
+            content: generatedImageBase64,
+          },
+        ],
+      });
+      debug.businessSent = !businessResult.error;
+      debug.businessResult = businessResult.error ? JSON.stringify(businessResult.error) : 'success: ' + (businessResult.data?.id || 'no id');
+      console.log('BUSINESS EMAIL RESULT:', JSON.stringify(businessResult));
+    } catch (err) {
+      debug.businessResult = 'EXCEPTION: ' + (err.message || String(err));
+      console.error('BUSINESS EMAIL EXCEPTION:', err);
+    }
   }
+ 
+  return debug;
 }
-
+ 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({
     '&': '&amp;',
