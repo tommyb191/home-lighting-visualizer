@@ -188,6 +188,7 @@ async function sendEmails({
     const customerResult = await resend.emails.send({
       from: `${businessName} <${fromEmail}>`,
       to: email,
+      replyTo: businessEmail || fromEmail,
       subject: 'Your home, illuminated ✨',
       html: customerEmailHtml,
       attachments: [
@@ -225,6 +226,7 @@ async function sendEmails({
       const businessResult = await resend.emails.send({
         from: `Lead Bot <${fromEmail}>`,
         to: businessEmail,
+        replyTo: email,
         subject: `🏡 New lead: ${name} (${phone})`,
         html: leadEmailHtml,
         attachments: [
