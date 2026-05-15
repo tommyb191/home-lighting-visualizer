@@ -19,22 +19,49 @@ export default function HomeLightingVisualizer() {
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      setUploadedImage(ev.target.result);
-      setStep('form');
-    };
-    reader.readAsDataURL(file);
+    resizeAndLoad(file);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
+    resizeAndLoad(file);
+  };
+
+  const resizeAndLoad = (file) => {
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setUploadedImage(ev.target.result);
-      setStep('form');
+      const img = new Image();
+      img.onload = () => {
+        // Resize to max 1600px on longest side and re-encode as JPEG ~80% quality
+        // This keeps quality high for Gemini but ensures we stay under Vercel's 4.5MB limit
+        const MAX_DIMENSION = 1600;
+        let { width, height } = img;
+        if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIMENSION) / width);
+            width = MAX_DIMENSION;
+          } else {
+            width = Math.round((width * MAX_DIMENSION) / height);
+            height = MAX_DIMENSION;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        setUploadedImage(resizedDataUrl);
+        setStep('form');
+      };
+      img.onerror = () => {
+        // If it can't load as image, fall back to raw upload (shouldn't normally happen)
+        setUploadedImage(ev.target.result);
+        setStep('form');
+      };
+      img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
   };
@@ -185,11 +212,8 @@ export default function HomeLightingVisualizer() {
         }
       `}</style>
 
-      <header className="relative z-20 w-full px-6 py-5 md:px-10 md:py-6 flex items-center justify-between">
-        <a href="https://phantomsound.com" target="_blank" rel="noopener noreferrer" className="block">
-          <img src="/phantom-logo.png" alt="Phantom" className="h-7 md:h-9 w-auto" />
-        </a>
-        <a href={QUOTE_URL} target="_blank" rel="noopener noreferrer" className="sans hidden md:inline-block text-xs tracking-[0.2em] uppercase text-amber-200/70 hover:text-amber-200 transition-colors">
+      <header className="relative z-20 w-full px-6 py-5 md:px-10 md:py-6 flex items-center justify-end">
+        <a href={QUOTE_URL} target="_blank" rel="noopener noreferrer" className="sans inline-block text-xs tracking-[0.2em] uppercase text-amber-200/70 hover:text-amber-200 transition-colors">
           Start a Project →
         </a>
       </header>
