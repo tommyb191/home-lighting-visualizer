@@ -4,37 +4,44 @@ import { Resend } from 'resend';
  
 export const maxDuration = 60;
  
-const LIGHTING_PROMPT = `Transform this daytime photograph of a home into the exact same home at night, professionally illuminated by high-end exterior landscape lighting. Moody, atmospheric, elegant — like a luxury real estate photograph taken at 9pm.
+const LIGHTING_PROMPT = `Transform this daytime photograph of a home into the exact same home at night, professionally illuminated by high-end exterior landscape lighting. The aesthetic should match a high-end real estate twilight photograph — moody, atmospheric, elegant, restrained.
  
-EXTERIOR LANDSCAPE LIGHTING — apply this evenly across the ENTIRE width of the home:
-- WARM UPLIGHTING along the FULL facade: place uplights at the base of the house at regular, evenly-spaced intervals across the entire front of the home from far left to far right. EVERY section of the facade should receive uplighting — including between every set of windows, at every corner, and along every wall. Do not leave any section of the facade in darkness.
-- BETWEEN-WINDOW UPLIGHTING: specifically, place uplights in every gap between windows on both floors so the brick/siding glows warmly in those spaces
-- PATH LIGHTING: small warm pools of light at regular intervals along all visible walkways, driveways, and garden paths
-- TREE LIGHTING: subtle warm uplights at the base of any trees, with gentle "moonlighting" from above casting soft dappled shadows
-- SHRUB AND PLANTING ACCENT LIGHTS: warm spots highlighting the foundation plantings and garden beds at the base of the home
+EXTERIOR LANDSCAPE LIGHTING — apply across the ENTIRE width of the home:
+- WARM UPLIGHTING along the FULL facade: place uplights at the base of the house at regular, evenly-spaced intervals from far left to far right. Every section of the facade receives uplighting — including between every set of windows, at every corner, and along every wall.
+- BETWEEN-WINDOW UPLIGHTING: place uplights in every gap between windows on both floors so the surface glows softly in those spaces.
+- PATH LIGHTING: small warm pools of light at regular intervals along walkways, driveways, garden paths.
+- TREE LIGHTING: subtle warm uplights at the base of any trees, gentle moonlighting from above with soft dappled shadows.
+- SHRUB AND PLANTING ACCENT LIGHTS: warm spots highlighting the foundation plantings and garden beds.
  
-WINDOWS, DOORS, AND INTERIOR — VERY IMPORTANT, FOLLOW STRICTLY:
-- Nearly all windows should be DARK or nearly dark — as if the rooms are unoccupied
-- ONLY 1-2 windows total across the entire home should show a faint, dim warm glow — and even those should be muted, subtle, barely noticeable
-- ALL OTHER windows must appear dark, reflective, or showing only the deep night sky — NOT lit from within
-- The front DOOR must be DARK — no light spilling from the doorway, no bright glow
-- DOOR SIDELIGHTS (the narrow vertical windows beside the door) must be DARK — no internal glow whatsoever
-- Transom windows above the door must be DARK
-- The right side of the home should have the SAME interior darkness as the left side — both sides must be balanced and equally dim inside
-- If you find yourself making a window "lit," ask yourself if it's necessary — the default answer is NO, keep it dark
-- The HOME'S BRIGHTNESS comes ENTIRELY from EXTERIOR landscape lighting hitting the facade — NOT from interior light bleeding out
+LIGHTING INTENSITY — VERY IMPORTANT, FOLLOW STRICTLY:
+- The uplighting must be SOFT, RESTRAINED, and SUBTLE — NEVER bright, blown-out, or harsh
+- DO NOT create bright white hotspots on the facade — the lit surfaces should show a gentle WARM AMBER GLOW (around 2700K), never overexposed white
+- The light should look NATURAL and ATMOSPHERIC, as if photographed at proper exposure — NOT as if the lights are too powerful for the surfaces
+- Think of well-designed residential lighting, not stage lighting or commercial spotlights
+- The brightest parts of the lit facade should still show the home's actual material color (brick, paint, stone) — never pure white
+- Light pools on surfaces should fade GRADUALLY into shadow, with no harsh edges
+- A professional architectural photographer would use careful exposure to render the lighting beautifully — match that aesthetic
+- If in doubt, err on the side of LESS bright
+ 
+WINDOWS, DOORS, AND INTERIOR:
+- Nearly all windows should be DARK or nearly dark
+- ONLY 1-2 windows total should show a faint, dim warm glow — and even those should be muted, subtle, barely noticeable
+- The front DOOR must be DARK — no light spilling from the doorway
+- DOOR SIDELIGHTS and TRANSOM WINDOWS must be DARK
+- Both sides of the home must have EQUALLY balanced (low) interior light
+- The home's visual presence comes from EXTERIOR landscape lighting hitting the facade SOFTLY — NOT from interior light bleeding out
  
 BALANCE AND SYMMETRY:
-- The left side and right side of the home must receive EQUAL exterior landscape lighting
-- No section of the facade should be brighter than another
-- The overall lighting should feel cohesive, professional, and intentional — like a single designer planned the entire layout
+- Left side and right side receive EQUAL exterior landscape lighting
+- No section of the facade should be noticeably brighter than another
+- Cohesive, professional, intentional — like a single designer planned every fixture
  
 SKY AND ATMOSPHERE:
 - DEEP NIGHT SKY: dark navy fading to nearly black, with a subtle gradient
 - Late evening — well after dusk, not twilight or blue hour
 - A few faint stars may be visible
-- Areas not directly hit by landscape lighting should fall into rich, atmospheric darkness
-- Strong contrast between the warmly lit zones and the darker surroundings
+- Areas not directly hit by landscape lighting fall into rich, atmospheric darkness
+- Strong but tasteful contrast between the warmly lit zones and the darker surroundings
  
 CRITICAL CONSTRAINTS:
 - Do NOT alter the home's structure, materials, paint color, brick, siding, roof, windows, doors, or landscaping
@@ -44,7 +51,7 @@ CRITICAL CONSTRAINTS:
 - The home must be instantly recognizable as the same building — only the lighting and time of day should change
 - Photorealistic, professional architectural photography aesthetic
 - Warm color temperature (2700K-3000K) for all landscape lighting
-- Restrained and tasteful — NOT theatrical, NOT theme-park, NOT a Christmas display, NOT a Las Vegas casino`;
+- Restrained, tasteful, high-end — NEVER theatrical, theme-park, Las Vegas, Christmas-display, or commercial-floodlight aesthetic`;
  
 export async function POST(req) {
   try {
