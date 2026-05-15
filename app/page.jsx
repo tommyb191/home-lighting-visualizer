@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Sparkles, Download, Share2, Loader2, ArrowRight, Mail, Phone, User, Home, MoveHorizontal } from 'lucide-react';
 
+const QUOTE_URL = 'https://phantomsound.com/start-a-project/';
+
 export default function HomeLightingVisualizer() {
   const [step, setStep] = useState('landing');
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -114,7 +116,7 @@ export default function HomeLightingVisualizer() {
         const blob = await res.blob();
         const file = new File([blob], 'my-home-illuminated.jpg', { type: 'image/jpeg' });
         await navigator.share({
-          title: 'My home, illuminated',
+          title: 'My home, illuminated by Phantom',
           text: 'Check out what my home could look like at night with professional landscape lighting!',
           files: [file],
         });
@@ -137,7 +139,7 @@ export default function HomeLightingVisualizer() {
 
   return (
     <div className="min-h-screen w-full" style={{
-      background: 'radial-gradient(ellipse at top, #1a2942 0%, #0a1525 50%, #050a14 100%)',
+      background: 'radial-gradient(ellipse at top, #0f1a2e 0%, #050a14 50%, #02060d 100%)',
       fontFamily: "'Cormorant Garamond', Georgia, serif"
     }}>
       <style jsx global>{`
@@ -178,14 +180,23 @@ export default function HomeLightingVisualizer() {
             radial-gradient(1px 1px at 40% 80%, white, transparent),
             radial-gradient(2px 2px at 90% 50%, rgba(255,255,255,0.6), transparent);
           background-size: 200px 200px;
-          opacity: 0.5;
+          opacity: 0.4;
           pointer-events: none;
         }
       `}</style>
 
+      <header className="relative z-20 w-full px-6 py-5 md:px-10 md:py-6 flex items-center justify-between">
+        <a href="https://phantomsound.com" target="_blank" rel="noopener noreferrer" className="block">
+          <img src="/phantom-logo.png" alt="Phantom" className="h-7 md:h-9 w-auto" />
+        </a>
+        <a href={QUOTE_URL} target="_blank" rel="noopener noreferrer" className="sans hidden md:inline-block text-xs tracking-[0.2em] uppercase text-amber-200/70 hover:text-amber-200 transition-colors">
+          Start a Project →
+        </a>
+      </header>
+
       {step === 'landing' && (
-        <div className="relative min-h-screen stars overflow-hidden">
-          <div className="relative z-10 max-w-5xl mx-auto px-6 py-16 md:py-24">
+        <div className="relative stars overflow-hidden">
+          <div className="relative z-10 max-w-5xl mx-auto px-6 py-12 md:py-20">
             <div className="fade-up text-center">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-200/20 mb-8 sans text-xs tracking-[0.2em] uppercase text-amber-100/70">
                 <Sparkles className="w-3 h-3" /> AI Lighting Preview
@@ -225,7 +236,7 @@ export default function HomeLightingVisualizer() {
       )}
 
       {step === 'upload' && (
-        <div className="min-h-screen flex items-center justify-center px-6 py-12">
+        <div className="flex items-center justify-center px-6 py-12 min-h-[calc(100vh-100px)]">
           <div className="max-w-2xl w-full fade-up">
             <div className="text-center mb-10">
               <p className="sans text-xs tracking-[0.3em] uppercase text-amber-200/60 mb-4">Step One</p>
@@ -265,7 +276,7 @@ export default function HomeLightingVisualizer() {
       )}
 
       {step === 'form' && (
-        <div className="min-h-screen flex items-center justify-center px-6 py-12">
+        <div className="flex items-center justify-center px-6 py-12 min-h-[calc(100vh-100px)]">
           <div className="max-w-4xl w-full grid md:grid-cols-2 gap-12 items-center fade-up">
             <div className="relative">
               <img src={uploadedImage} alt="Your home" className="w-full rounded-sm shadow-2xl" />
@@ -280,29 +291,9 @@ export default function HomeLightingVisualizer() {
               <p className="sans text-sm text-slate-400 mb-8">We'll generate your nighttime image and send a copy you can save and share.</p>
 
               <div className="space-y-5">
-                <Field
-                  icon={<User className="w-4 h-4" />}
-                  label="Name"
-                  value={formData.name}
-                  onChange={(v) => setFormData({ ...formData, name: v })}
-                  error={errors.name}
-                />
-                <Field
-                  icon={<Mail className="w-4 h-4" />}
-                  label="Email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(v) => setFormData({ ...formData, email: v })}
-                  error={errors.email}
-                />
-                <Field
-                  icon={<Phone className="w-4 h-4" />}
-                  label="Phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(v) => setFormData({ ...formData, phone: v })}
-                  error={errors.phone}
-                />
+                <Field icon={<User className="w-4 h-4" />} label="Name" value={formData.name} onChange={(v) => setFormData({ ...formData, name: v })} error={errors.name} />
+                <Field icon={<Mail className="w-4 h-4" />} label="Email" type="email" value={formData.email} onChange={(v) => setFormData({ ...formData, email: v })} error={errors.email} />
+                <Field icon={<Phone className="w-4 h-4" />} label="Phone" type="tel" value={formData.phone} onChange={(v) => setFormData({ ...formData, phone: v })} error={errors.phone} />
               </div>
 
               <button
@@ -319,7 +310,7 @@ export default function HomeLightingVisualizer() {
       )}
 
       {step === 'processing' && (
-        <div className="min-h-screen flex items-center justify-center px-6">
+        <div className="flex items-center justify-center px-6 min-h-[calc(100vh-100px)]">
           <div className="text-center fade-up">
             <div className="relative w-24 h-24 mx-auto mb-8">
               <div className="absolute inset-0 rounded-full border border-amber-200/20"></div>
@@ -330,14 +321,14 @@ export default function HomeLightingVisualizer() {
               Lighting <span className="italic gold-text">your home</span>
             </h2>
             <p className="sans text-slate-400 max-w-md mx-auto">
-              Our AI is placing uplights along the facade, path lighting through your landscape, and warm interior glow. This takes about 25 seconds.
+              Our AI is placing uplights along the facade, path lighting through your landscape, and a deep evening sky. This takes about 25 seconds.
             </p>
           </div>
         </div>
       )}
 
       {step === 'result' && (
-        <div className="min-h-screen px-4 py-12 md:py-16">
+        <div className="px-4 py-12 md:py-16">
           <div className="max-w-5xl mx-auto fade-up">
             <div className="text-center mb-10">
               <p className="sans text-xs tracking-[0.3em] uppercase text-amber-200/60 mb-4">Your Preview</p>
@@ -354,32 +345,16 @@ export default function HomeLightingVisualizer() {
               className="relative w-full rounded-sm overflow-hidden shadow-2xl glow select-none"
               style={{ aspectRatio: '4/3', cursor: isDragging ? 'grabbing' : 'default' }}
             >
-              <img
-                src={uploadedImage}
-                alt="Daytime"
-                className="absolute inset-0 w-full h-full object-cover"
-                draggable={false}
-              />
+              <img src={uploadedImage} alt="Daytime" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
 
-              <div
-                className="absolute inset-0 overflow-hidden"
-                style={{ clipPath: `inset(0 0 0 ${sliderPos}%)` }}
-              >
-                <img
-                  src={generatedImage}
-                  alt="Nighttime"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  draggable={false}
-                />
+              <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 0 0 ${sliderPos}%)` }}>
+                <img src={generatedImage} alt="Nighttime" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
               </div>
 
               <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 text-slate-900 sans text-xs tracking-wider uppercase rounded-sm">Before</div>
               <div className="absolute top-4 right-4 px-3 py-1 bg-amber-200 text-slate-900 sans text-xs tracking-wider uppercase rounded-sm">After</div>
 
-              <div
-                className="absolute top-0 bottom-0 w-0.5 bg-amber-200 pointer-events-none"
-                style={{ left: `${sliderPos}%` }}
-              >
+              <div className="absolute top-0 bottom-0 w-0.5 bg-amber-200 pointer-events-none" style={{ left: `${sliderPos}%` }}>
                 <div
                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-amber-200 shadow-2xl flex items-center justify-center pointer-events-auto cursor-grab active:cursor-grabbing"
                   onMouseDown={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -398,7 +373,7 @@ export default function HomeLightingVisualizer() {
               <button onClick={shareImage} className="sans inline-flex items-center gap-2 px-6 py-3 border border-amber-200/40 text-amber-200 font-medium rounded-sm hover:bg-amber-200/10 transition-colors">
                 <Share2 className="w-4 h-4" /> Share
               </button>
-              <a href="https://yourcompany.com/contact" className="sans inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-900 font-medium rounded-sm hover:bg-slate-100 transition-colors">
+              <a href={QUOTE_URL} target="_blank" rel="noopener noreferrer" className="sans inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-900 font-medium rounded-sm hover:bg-slate-100 transition-colors">
                 <Home className="w-4 h-4" /> Request a Real Quote
               </a>
             </div>
@@ -409,6 +384,12 @@ export default function HomeLightingVisualizer() {
           </div>
         </div>
       )}
+
+      <footer className="relative z-10 w-full px-6 py-8 text-center">
+        <p className="sans text-xs tracking-[0.2em] uppercase text-slate-500/60">
+          AI Lighting Preview · powered by <a href="https://phantomsound.com" target="_blank" rel="noopener noreferrer" className="text-amber-200/70 hover:text-amber-200 transition-colors">Phantom</a>
+        </p>
+      </footer>
     </div>
   );
 }
