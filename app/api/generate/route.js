@@ -4,39 +4,47 @@ import { Resend } from 'resend';
 
 export const maxDuration = 60;
 
-const LIGHTING_PROMPT = `Transform this daytime photograph of a home into the exact same home at night, professionally illuminated by high-end landscape lighting. The scene should feel like late evening — moody, atmospheric, and elegant.
+const LIGHTING_PROMPT = `Transform this daytime photograph of a home into the exact same home at night, professionally illuminated by high-end exterior landscape lighting. Moody, atmospheric, elegant — like a luxury real estate photograph taken at 9pm.
 
-LIGHTING TO APPLY:
-- WARM UPLIGHTING on the facade: place lights at the base of the house washing up the walls, highlighting architectural features, columns, stonework, and textured surfaces
-- PATH LIGHTING along any visible walkways, driveways, or garden paths — small warm pools of light at regular intervals
-- TREE LIGHTING: subtle uplights at the base of any trees, plus gentle "moonlighting" effect from above casting soft dappled shadows on the ground
-- ACCENT LIGHTING on garden beds, shrubs, or focal landscape features
+EXTERIOR LANDSCAPE LIGHTING — apply this evenly across the ENTIRE width of the home:
+- WARM UPLIGHTING along the FULL facade: place uplights at the base of the house at regular, evenly-spaced intervals across the entire front of the home from far left to far right. EVERY section of the facade should receive uplighting — including between every set of windows, at every corner, and along every wall. Do not leave any section of the facade in darkness.
+- BETWEEN-WINDOW UPLIGHTING: specifically, place uplights in every gap between windows on both floors so the brick/siding glows warmly in those spaces
+- PATH LIGHTING: small warm pools of light at regular intervals along all visible walkways, driveways, and garden paths
+- TREE LIGHTING: subtle warm uplights at the base of any trees, with gentle "moonlighting" from above casting soft dappled shadows
+- SHRUB AND PLANTING ACCENT LIGHTS: warm spots highlighting the foundation plantings and garden beds at the base of the home
 
-INTERIOR WINDOW GLOW — IMPORTANT:
-- Only a FEW windows should show interior light — NOT every window or door
-- The interior glow should be VERY SUBTLE and DIM — a faint, warm amber suggestion of light, not bright illumination
-- Most windows should appear dark or very dimly lit
-- Think of a home where the residents are home but only one or two rooms are in use
-- Doors should NOT glow brightly — they should be dark or only very faintly lit from within
-- The visual emphasis should be on the EXTERIOR landscape lighting, not on interior brightness
+WINDOWS, DOORS, AND INTERIOR — VERY IMPORTANT, FOLLOW STRICTLY:
+- Nearly all windows should be DARK or nearly dark — as if the rooms are unoccupied
+- ONLY 1-2 windows total across the entire home should show a faint, dim warm glow — and even those should be muted, subtle, barely noticeable
+- ALL OTHER windows must appear dark, reflective, or showing only the deep night sky — NOT lit from within
+- The front DOOR must be DARK — no light spilling from the doorway, no bright glow
+- DOOR SIDELIGHTS (the narrow vertical windows beside the door) must be DARK — no internal glow whatsoever
+- Transom windows above the door must be DARK
+- The right side of the home should have the SAME interior darkness as the left side — both sides must be balanced and equally dim inside
+- If you find yourself making a window "lit," ask yourself if it's necessary — the default answer is NO, keep it dark
+- The HOME'S BRIGHTNESS comes ENTIRELY from EXTERIOR landscape lighting hitting the facade — NOT from interior light bleeding out
+
+BALANCE AND SYMMETRY:
+- The left side and right side of the home must receive EQUAL exterior landscape lighting
+- No section of the facade should be brighter than another
+- The overall lighting should feel cohesive, professional, and intentional — like a single designer planned the entire layout
 
 SKY AND ATMOSPHERE:
-- DEEP NIGHT SKY: dark navy to nearly black at the top, with subtle gradient
-- This is late evening / well after dusk — NOT blue hour or twilight
-- Stars may be faintly visible in the sky
-- The overall scene should feel rich and dark, with the landscape lighting providing the primary illumination
-- Surrounding areas (driveway, lawn beyond the lit zones, trees not directly lit) should fall into atmospheric darkness
+- DEEP NIGHT SKY: dark navy fading to nearly black, with a subtle gradient
+- Late evening — well after dusk, not twilight or blue hour
+- A few faint stars may be visible
+- Areas not directly hit by landscape lighting should fall into rich, atmospheric darkness
 - Strong contrast between the warmly lit zones and the darker surroundings
 
 CRITICAL CONSTRAINTS:
-- Do NOT alter the home's structure, materials, paint color, roof, windows, doors, or landscaping
-- Do NOT add or remove any architectural features
+- Do NOT alter the home's structure, materials, paint color, brick, siding, roof, windows, doors, or landscaping
+- Do NOT add or remove any architectural features, signs, or text
 - Do NOT change the camera angle or composition
 - Do NOT add cars, people, or new objects
-- The home must be instantly recognizable as the same house — only the lighting and time of day should change
-- Photorealistic quality, professional architectural photography aesthetic
+- The home must be instantly recognizable as the same building — only the lighting and time of day should change
+- Photorealistic, professional architectural photography aesthetic
 - Warm color temperature (2700K-3000K) for all landscape lighting
-- Tasteful, restrained, high-end residential design — NOT theatrical, NOT theme-park, NOT a Christmas display`;
+- Restrained and tasteful — NOT theatrical, NOT theme-park, NOT a Christmas display, NOT a Las Vegas casino`;
 
 export async function POST(req) {
   try {
