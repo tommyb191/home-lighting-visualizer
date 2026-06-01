@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { Resend } from 'resend';
- 
+
 export const maxDuration = 60;
- 
+
 const LIGHTING_PROMPT = `Transform this daytime photograph of a home into the exact same home at night, professionally illuminated by high-end exterior landscape lighting. The aesthetic should match a high-end real estate twilight photograph — moody, atmospheric, elegant, restrained.
- 
+
 EXTERIOR LANDSCAPE LIGHTING — apply across the ENTIRE width of the home:
 - WARM UPLIGHTING along the FULL facade: place uplights at the base of the house at regular, evenly-spaced intervals from far left to far right. Every section of the facade receives uplighting — including between every set of windows, at every corner, and along every wall.
 - BETWEEN-WINDOW UPLIGHTING: place uplights in every gap between windows on both floors so the surface glows softly in those spaces.
 - PATH LIGHTING: small warm pools of light at regular intervals along walkways, driveways, garden paths.
 - TREE LIGHTING: subtle warm uplights at the base of any trees, gentle moonlighting from above with soft dappled shadows.
 - SHRUB AND PLANTING ACCENT LIGHTS: warm spots highlighting the foundation plantings and garden beds.
- 
+
 LIGHTING INTENSITY — VERY IMPORTANT, FOLLOW STRICTLY:
 - The uplighting must be SOFT, RESTRAINED, and SUBTLE — NEVER bright, blown-out, or harsh
 - DO NOT create bright white hotspots on the facade — the lit surfaces should show a gentle WARM AMBER GLOW (around 2700K), never overexposed white
@@ -22,27 +22,31 @@ LIGHTING INTENSITY — VERY IMPORTANT, FOLLOW STRICTLY:
 - Light pools on surfaces should fade GRADUALLY into shadow, with no harsh edges
 - A professional architectural photographer would use careful exposure to render the lighting beautifully — match that aesthetic
 - If in doubt, err on the side of LESS bright
- 
-WINDOWS, DOORS, AND INTERIOR:
-- Nearly all windows should be DARK or nearly dark
-- ONLY 1-2 windows total should show a faint, dim warm glow — and even those should be muted, subtle, barely noticeable
-- The front DOOR must be DARK — no light spilling from the doorway
-- DOOR SIDELIGHTS and TRANSOM WINDOWS must be DARK
-- Both sides of the home must have EQUALLY balanced (low) interior light
-- The home's visual presence comes from EXTERIOR landscape lighting hitting the facade SOFTLY — NOT from interior light bleeding out
- 
+
+WINDOWS, DOORS, AND COACH LIGHTS — ALL DARK / OFF:
+- ALL windows must be DARK — no interior light showing through, no glow, no warm light visible inside
+- The front DOOR must be DARK — no light spilling out, no glow from inside
+- DOOR SIDELIGHTS and TRANSOM WINDOWS must be DARK — no internal glow whatsoever
+- Garage doors and any garage windows must be DARK
+- ALL coach lights, sconces, wall-mounted lanterns, and porch lights must be OFF — render the fixtures in the photo but with NO illumination
+- DO NOT add any glow, light spill, or illumination to any house-mounted fixture (coach lights by front door, garage coach lights, sconces, pendant lights, porch lights)
+- DO NOT light up the front door area from above
+- The home itself — windows, doors, all wall-mounted fixtures — should appear COMPLETELY DARK
+- The home's entire visual presence comes EXCLUSIVELY from professionally-installed LANDSCAPE LIGHTING (uplights at the base of the facade, path lights, tree lights, accent lights on shrubs and plantings) — nothing else
+- This is critical: we are showcasing ONLY the landscape lighting design — the house itself stays dark
+
 BALANCE AND SYMMETRY:
 - Left side and right side receive EQUAL exterior landscape lighting
 - No section of the facade should be noticeably brighter than another
 - Cohesive, professional, intentional — like a single designer planned every fixture
- 
+
 SKY AND ATMOSPHERE:
 - DEEP NIGHT SKY: dark navy fading to nearly black, with a subtle gradient
 - Late evening — well after dusk, not twilight or blue hour
 - A few faint stars may be visible
 - Areas not directly hit by landscape lighting fall into rich, atmospheric darkness
 - Strong but tasteful contrast between the warmly lit zones and the darker surroundings
- 
+
 CRITICAL CONSTRAINTS:
 - Do NOT alter the home's structure, materials, paint color, brick, siding, roof, windows, doors, or landscaping
 - Do NOT add or remove any architectural features, signs, or text
@@ -52,24 +56,24 @@ CRITICAL CONSTRAINTS:
 - Photorealistic, professional architectural photography aesthetic
 - Warm color temperature (2700K-3000K) for all landscape lighting
 - Restrained, tasteful, high-end — NEVER theatrical, theme-park, Las Vegas, Christmas-display, or commercial-floodlight aesthetic`;
- 
+
 export async function POST(req) {
   try {
     const { image, name, email, phone } = await req.json();
- 
+
     if (!image || !name || !email || !phone) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
- 
+
     const base64Match = image.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
     if (!base64Match) {
       return NextResponse.json({ error: 'Invalid image format' }, { status: 400 });
     }
     const mimeType = base64Match[1];
     const imageData = base64Match[2];
- 
+
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
- 
+
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: [
@@ -82,7 +86,7 @@ export async function POST(req) {
         },
       ],
     });
- 
+
     let generatedBase64 = null;
     let generatedMimeType = 'image/png';
     const parts = response?.candidates?.[0]?.content?.parts || [];
@@ -93,14 +97,14 @@ export async function POST(req) {
         break;
       }
     }
- 
+
     if (!generatedBase64) {
       console.error('No image returned from Gemini', JSON.stringify(response, null, 2));
       return NextResponse.json({ error: 'Image generation failed' }, { status: 500 });
     }
- 
+
     const generatedDataUrl = `data:${generatedMimeType};base64,${generatedBase64}`;
- 
+
     // Try to send emails and capture any errors so we can see them
     let emailDebug = { attempted: false, customerSent: false, businessSent: false, error: null };
     try {
@@ -118,14 +122,14 @@ export async function POST(req) {
       emailDebug.error = err.message || String(err);
     }
     console.log('EMAIL DEBUG:', JSON.stringify(emailDebug));
- 
+
     return NextResponse.json({ generatedImage: generatedDataUrl, emailDebug });
   } catch (err) {
     console.error('Generate route error:', err);
     return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 });
   }
 }
- 
+
 async function sendEmails({
   name,
   email,
@@ -147,22 +151,22 @@ async function sendEmails({
     businessResult: null,
     error: null,
   };
- 
+
   if (!process.env.RESEND_API_KEY) {
     debug.error = 'RESEND_API_KEY environment variable is not set in Vercel';
     console.warn(debug.error);
     return debug;
   }
- 
+
   const resend = new Resend(process.env.RESEND_API_KEY);
   const fromEmail = process.env.FROM_EMAIL || 'onboarding@resend.dev';
   const businessEmail = process.env.BUSINESS_EMAIL;
   const businessName = process.env.BUSINESS_NAME || 'Phantom';
   const businessWebsite = process.env.BUSINESS_WEBSITE || 'https://phantomsound.com/start-a-project/';
- 
+
   const originalExt = originalMimeType.split('/')[1] || 'jpg';
   const generatedExt = generatedMimeType.split('/')[1] || 'png';
- 
+
   const customerEmailHtml = `
 <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #050a14; color: #ffffff; padding: 40px 30px;">
   <h1 style="font-weight: 300; font-size: 32px; margin: 0 0 8px 0; color: #ffffff;">
@@ -190,7 +194,7 @@ async function sendEmails({
     This is an AI-generated preview. Real lighting design will be customized to your home's architecture, landscape, and your personal preferences.
   </p>
 </div>`;
- 
+
   try {
     const customerResult = await resend.emails.send({
       from: `${businessName} <${fromEmail}>`,
@@ -212,7 +216,7 @@ async function sendEmails({
     debug.customerResult = 'EXCEPTION: ' + (err.message || String(err));
     console.error('CUSTOMER EMAIL EXCEPTION:', err);
   }
- 
+
   if (businessEmail) {
     const leadEmailHtml = `
 <div style="font-family: -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -228,7 +232,7 @@ async function sendEmails({
     <strong>Next step:</strong> Call or email within 24 hours while they're still excited about the preview.
   </div>
 </div>`;
- 
+
     try {
       const businessResult = await resend.emails.send({
         from: `Lead Bot <${fromEmail}>`,
@@ -255,10 +259,10 @@ async function sendEmails({
       console.error('BUSINESS EMAIL EXCEPTION:', err);
     }
   }
- 
+
   return debug;
 }
- 
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({
     '&': '&amp;',
