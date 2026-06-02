@@ -14,10 +14,12 @@ CRITICAL OVERALL CONSTRAINT — THE HOUSE IS DARK, ONLY THE YARD IS LIT:
 
 EXTERIOR GROUND-BASED LANDSCAPE LIGHTING — apply across the ENTIRE width of the home:
 - WARM UPLIGHTING along the FULL facade: place uplights AT GROUND LEVEL at the base of the house at regular, evenly-spaced intervals from far left to far right. The light source is in the ground, aimed UPWARD onto the wall. Every section of the facade receives this ground-based uplighting — including between every set of windows, at every corner, and along every wall.
-- BETWEEN-WINDOW UPLIGHTING: place ground uplights in every gap between windows on both floors so the surface glows softly in those spaces — light source is on the ground aimed up.
+- TWO-STORY HOMES — TIERED UPLIGHTING (IMPORTANT): if the home has two stories, add a SECOND tier of uplights placed on top of any single-story roof section (above garages, porches, sunrooms, additions, or first-floor extensions) aimed UPWARD at the second-floor facade. Also place small uplights mounted on the gutter line or in soffit recesses aimed up to illuminate the second floor of the main two-story section. The goal: NO part of the upper facade should remain in shadow. Both first and second floors must be evenly washed in warm light from ground-based AND mid-level uplights.
+- BETWEEN-WINDOW UPLIGHTING: place ground uplights in every gap between windows on both floors so the surface glows softly in those spaces — light source is on the ground (or on the gutter line for the second floor) aimed up.
 - PATH LIGHTING: small warm pools of light at regular intervals along walkways, driveways, garden paths — small fixtures at ground level casting light downward and outward.
 - TREE LIGHTING: subtle warm uplights at the base of any trees aimed up into the canopy, gentle moonlighting from above with soft dappled shadows.
 - SHRUB AND PLANTING ACCENT LIGHTS: warm spots highlighting the foundation plantings and garden beds — light source low and aimed at the plant.
+- ENTRY AREA UPLIGHTING: place two ground uplights flanking the front door area on the ground, aimed UP at the entry facade — this replaces what coach lights would normally do. The entry area should be lit BUT only from ground-based uplights, never from wall-mounted coach lights.
 
 LIGHTING INTENSITY — VERY IMPORTANT, FOLLOW STRICTLY:
 - The uplighting must be SOFT, RESTRAINED, and SUBTLE — NEVER bright, blown-out, or harsh
@@ -57,6 +59,18 @@ WALL-MOUNTED FIXTURES (this is where you keep making mistakes — read carefully
 - DO NOT add coach lights, sconces, or porch lights that were not in the daytime photo
 - DO NOT add a glow, halo, or light spill emanating from any fixture mounted on the home's walls
 - The bulbs inside these fixtures should appear DARK GRAY or BLACK, not yellow or warm
+
+★ MOST COMMON ERROR — FRONT DOOR COACH LIGHTS ★
+The AI consistently makes the mistake of lighting the coach lights / lanterns on either side of the front door. THIS IS THE #1 ERROR TO AVOID.
+- The two lanterns/coach lights flanking the front door MUST BE OFF, DARK, UNLIT
+- Their bulbs should appear BLACK or DARK GRAY — like glass globes with no power
+- There must be NO warm glow inside these fixtures
+- There must be NO halo of light around these fixtures
+- There must be NO yellow wash on the wall behind or above these fixtures
+- The wall AROUND the front door must be illuminated ONLY by ground-based uplights placed at the base of the wall — the lighting on the entry comes from BELOW (ground-up), not from the SIDE (coach light height)
+- A correct rendering: the coach light fixtures are visible in the photo but appear as dark unlit objects, while the wall around them glows warmly from ground uplights pointing UP at the wall
+
+Same rule applies for any coach lights beside or above garage doors — DARK, UNLIT, no glow.
 
 GARAGE AREA:
 - Garage doors must be DARK
