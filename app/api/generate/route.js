@@ -4,14 +4,20 @@ import { Resend } from 'resend';
 
 export const maxDuration = 60;
 
-const LIGHTING_PROMPT = `Transform this daytime photograph of a home into the exact same home at night, professionally illuminated by high-end exterior landscape lighting. The aesthetic should match a high-end real estate twilight photograph — moody, atmospheric, elegant, restrained.
+const LIGHTING_PROMPT = `Transform this daytime photograph of a home into the exact same home at night with ONLY ground-based landscape lighting installed by a professional landscape lighting company. The HOUSE ITSELF is dark — no interior lights, no porch lights, no coach lights, no sconces — only the landscape lighting in the yard is operating. The aesthetic should match a high-end real estate twilight photograph showcasing landscape lighting design — moody, atmospheric, elegant, restrained.
 
-EXTERIOR LANDSCAPE LIGHTING — apply across the ENTIRE width of the home:
-- WARM UPLIGHTING along the FULL facade: place uplights at the base of the house at regular, evenly-spaced intervals from far left to far right. Every section of the facade receives uplighting — including between every set of windows, at every corner, and along every wall.
-- BETWEEN-WINDOW UPLIGHTING: place uplights in every gap between windows on both floors so the surface glows softly in those spaces.
-- PATH LIGHTING: small warm pools of light at regular intervals along walkways, driveways, garden paths.
-- TREE LIGHTING: subtle warm uplights at the base of any trees, gentle moonlighting from above with soft dappled shadows.
-- SHRUB AND PLANTING ACCENT LIGHTS: warm spots highlighting the foundation plantings and garden beds.
+CRITICAL OVERALL CONSTRAINT — THE HOUSE IS DARK, ONLY THE YARD IS LIT:
+- The home itself appears as if its electrical power is off
+- ALL light comes from ground-based landscape fixtures aimed UP at the facade and plantings
+- ZERO light comes from any fixture mounted on the home itself (no coach lights, no sconces, no porch lights, no interior lights through windows)
+- If you find yourself rendering a glowing porch light or coach light, you are violating this constraint — replace it with a dark unlit fixture
+
+EXTERIOR GROUND-BASED LANDSCAPE LIGHTING — apply across the ENTIRE width of the home:
+- WARM UPLIGHTING along the FULL facade: place uplights AT GROUND LEVEL at the base of the house at regular, evenly-spaced intervals from far left to far right. The light source is in the ground, aimed UPWARD onto the wall. Every section of the facade receives this ground-based uplighting — including between every set of windows, at every corner, and along every wall.
+- BETWEEN-WINDOW UPLIGHTING: place ground uplights in every gap between windows on both floors so the surface glows softly in those spaces — light source is on the ground aimed up.
+- PATH LIGHTING: small warm pools of light at regular intervals along walkways, driveways, garden paths — small fixtures at ground level casting light downward and outward.
+- TREE LIGHTING: subtle warm uplights at the base of any trees aimed up into the canopy, gentle moonlighting from above with soft dappled shadows.
+- SHRUB AND PLANTING ACCENT LIGHTS: warm spots highlighting the foundation plantings and garden beds — light source low and aimed at the plant.
 
 LIGHTING INTENSITY — VERY IMPORTANT, FOLLOW STRICTLY:
 - The uplighting must be SOFT, RESTRAINED, and SUBTLE — NEVER bright, blown-out, or harsh
@@ -24,16 +30,54 @@ LIGHTING INTENSITY — VERY IMPORTANT, FOLLOW STRICTLY:
 - If in doubt, err on the side of LESS bright
 
 WINDOWS, DOORS, AND COACH LIGHTS — ALL DARK / OFF:
-- ALL windows must be DARK — no interior light showing through, no glow, no warm light visible inside
-- The front DOOR must be DARK — no light spilling out, no glow from inside
-- DOOR SIDELIGHTS and TRANSOM WINDOWS must be DARK — no internal glow whatsoever
-- Garage doors and any garage windows must be DARK
-- ALL coach lights, sconces, wall-mounted lanterns, and porch lights must be OFF — render the fixtures in the photo but with NO illumination
-- DO NOT add any glow, light spill, or illumination to any house-mounted fixture (coach lights by front door, garage coach lights, sconces, pendant lights, porch lights)
-- DO NOT light up the front door area from above
-- The home itself — windows, doors, all wall-mounted fixtures — should appear COMPLETELY DARK
-- The home's entire visual presence comes EXCLUSIVELY from professionally-installed LANDSCAPE LIGHTING (uplights at the base of the facade, path lights, tree lights, accent lights on shrubs and plantings) — nothing else
-- This is critical: we are showcasing ONLY the landscape lighting design — the house itself stays dark
+
+CRITICAL FRAMING — READ THIS FIRST:
+Imagine the HOUSE ITSELF has its power turned OFF, but a separate landscape lighting circuit is operating in the yard. The home is asleep. The homeowner has gone to bed. NO interior lights are on, NO porch lights are on, NO sconces are on, NO coach lights are on. The ONLY light source on the entire property is professional landscape lighting installed in the ground and aimed at the home and plantings.
+
+The dark zones below are non-negotiable and must remain pitch black:
+
+ALL WINDOWS:
+- Every single window on the home must be DARK — completely unlit, showing no interior glow whatsoever
+- Windows should look like dark, slightly reflective glass — as if the rooms behind them are empty and unlit
+- This includes upstairs windows, downstairs windows, dormer windows, transom windows, sidelights, garage windows, and basement windows
+- DO NOT add any warm light, amber tint, or yellow glow inside or behind ANY window
+
+THE FRONT DOOR AND ENTIRE ENTRY AREA:
+- The front door must be DARK — no light spilling from inside, no glow from above, no glow from the sides
+- DOOR SIDELIGHTS (the vertical narrow windows beside the door) must be COMPLETELY DARK
+- TRANSOM WINDOWS (the horizontal window above the door) must be COMPLETELY DARK
+- The wall area immediately around the front door must be DARK — no warm wash, no spotlight, no glow
+- The ceiling/overhang above the door must be DARK
+
+WALL-MOUNTED FIXTURES (this is where you keep making mistakes — read carefully):
+- DO NOT illuminate any wall-mounted fixture on the home
+- This includes: coach lights, lanterns, sconces, pendant lights, porch lights, wall-mounted lamps, gooseneck lights, barn lights, dome lights — ANY light attached to the exterior wall of the home
+- Coach lights are the lantern-style fixtures typically mounted on either side of the front door, beside garage doors, and sometimes between garage doors. THESE MUST BE DARK.
+- If the daytime photo shows a coach light, render it in the same position but UNLIT — like a lamp that is turned off
+- DO NOT add coach lights, sconces, or porch lights that were not in the daytime photo
+- DO NOT add a glow, halo, or light spill emanating from any fixture mounted on the home's walls
+- The bulbs inside these fixtures should appear DARK GRAY or BLACK, not yellow or warm
+
+GARAGE AREA:
+- Garage doors must be DARK
+- Any coach lights or sconces beside or above garage doors must be DARK / OFF
+- DO NOT add wash light or glow above the garage doors from house-mounted fixtures
+- Garage windows must be DARK
+
+EQUALITY ACROSS THE HOME:
+- Left side and right side of the home must be equally dark in terms of house-mounted lighting
+- No section of the facade should appear lit by anything other than ground-based landscape lighting
+
+ONLY ALLOWED LIGHT SOURCES:
+- Uplights placed in the ground, at the base of the home, aimed UPWARD onto the facade (creates wash of light on brick/siding from below)
+- Uplights at the base of trees aimed up into the canopy
+- Path lights along walkways and driveways at ground level
+- Small accent spots aimed at shrubs and plantings from ground level
+- Moonlighting from above in trees (downward soft dappled light)
+
+THAT'S IT. NO OTHER LIGHT SOURCES. If you find yourself adding glow to a wall-mounted fixture, STOP and replace that glow with a ground-based uplight at the base of the wall instead.
+
+REMEMBER: the home is dark. The yard is lit. The bulbs in any house-mounted fixtures are OFF.
 
 BALANCE AND SYMMETRY:
 - Left side and right side receive EQUAL exterior landscape lighting
