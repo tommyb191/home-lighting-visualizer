@@ -14,8 +14,16 @@ CRITICAL OVERALL CONSTRAINT — THE HOUSE IS DARK, ONLY THE YARD IS LIT:
 
 EXTERIOR GROUND-BASED LANDSCAPE LIGHTING — apply across the ENTIRE width of the home:
 - WARM UPLIGHTING along the FULL facade: place uplights AT GROUND LEVEL at the base of the house at regular, evenly-spaced intervals from far left to far right. The light source is in the ground, aimed UPWARD onto the wall. Every section of the facade receives this ground-based uplighting — including between every set of windows, at every corner, and along every wall.
-- TWO-STORY HOMES — TIERED UPLIGHTING (IMPORTANT): if the home has two stories, add a SECOND tier of uplights placed on top of any single-story roof section (above garages, porches, sunrooms, additions, or first-floor extensions) aimed UPWARD at the second-floor facade. Also place small uplights mounted on the gutter line or in soffit recesses aimed up to illuminate the second floor of the main two-story section. The goal: NO part of the upper facade should remain in shadow. Both first and second floors must be evenly washed in warm light from ground-based AND mid-level uplights.
-- BETWEEN-WINDOW UPLIGHTING: place ground uplights in every gap between windows on both floors so the surface glows softly in those spaces — light source is on the ground (or on the gutter line for the second floor) aimed up.
+- TWO-STORY HOMES — REACHING THE SECOND FLOOR: if the home has two stories, the SAME ground-based uplights at the base of the wall should be aimed steeply UPWARD so their cone of light reaches the second-floor facade. Where a single-story roof section sits in front of a two-story section (above garages, porches, sunrooms, first-floor extensions), additional uplights may be placed ON THE GROUND just behind that roof section, hidden from view, aimed UP at the second floor — but they must still be GROUND-BASED, aimed UP, not mounted on the building. The goal: the second floor receives the same warm wash as the first floor, with the light cone visibly traveling UPWARD from below. NO part of the upper facade should remain in shadow.
+
+★ DOWNWARD-FACING LIGHT IS FORBIDDEN ★
+The light cone on the facade must always be widest at the top and narrowest at the bottom — this is the signature of an UPLIGHT (light from below aiming up).
+- DO NOT place any fixture in the soffit, eaves, fascia, or any high mounted location aimed DOWNWARD
+- DO NOT create downward cones of light on the facade (these look like inverted triangles: bright at top, fading down)
+- DO NOT add recessed downlights, soffit lights, wash lights, sconce-style downlights, or anything that mounts on the home and aims down at the wall or ground
+- The visual signature you must AVOID: a tight bright spot HIGH on the facade with light fading DOWNWARD below it (this is a soffit downlight — WRONG)
+- The visual signature you must PRODUCE: a wider warm wash on the facade that is brightest at the BOTTOM of the wall and gradually fades UPWARD (this is a ground uplight — CORRECT)
+- BETWEEN-WINDOW UPLIGHTING: place ground uplights in every gap between windows on both floors so the surface glows softly in those spaces — light source is on the GROUND, aimed UP. Never on the gutter, never in the soffit, never aimed down.
 - PATH LIGHTING: small warm pools of light at regular intervals along walkways, driveways, garden paths — small fixtures at ground level casting light downward and outward.
 - TREE LIGHTING: subtle warm uplights at the base of any trees aimed up into the canopy, gentle moonlighting from above with soft dappled shadows.
 - SHRUB AND PLANTING ACCENT LIGHTS: warm spots highlighting the foundation plantings and garden beds — light source low and aimed at the plant.
@@ -61,16 +69,27 @@ WALL-MOUNTED FIXTURES (this is where you keep making mistakes — read carefully
 - The bulbs inside these fixtures should appear DARK GRAY or BLACK, not yellow or warm
 
 ★ MOST COMMON ERROR — FRONT DOOR COACH LIGHTS ★
-The AI consistently makes the mistake of lighting the coach lights / lanterns on either side of the front door. THIS IS THE #1 ERROR TO AVOID.
-- The two lanterns/coach lights flanking the front door MUST BE OFF, DARK, UNLIT
-- Their bulbs should appear BLACK or DARK GRAY — like glass globes with no power
-- There must be NO warm glow inside these fixtures
-- There must be NO halo of light around these fixtures
-- There must be NO yellow wash on the wall behind or above these fixtures
-- The wall AROUND the front door must be illuminated ONLY by ground-based uplights placed at the base of the wall — the lighting on the entry comes from BELOW (ground-up), not from the SIDE (coach light height)
-- A correct rendering: the coach light fixtures are visible in the photo but appear as dark unlit objects, while the wall around them glows warmly from ground uplights pointing UP at the wall
+The AI consistently makes the mistake of placing a small glowing point of light at the position where coach lights / lanterns sit on either side of the front door. THIS MUST STOP. Follow these rules absolutely:
 
-Same rule applies for any coach lights beside or above garage doors — DARK, UNLIT, no glow.
+- The two positions on either side of the front door — where coach lights typically hang — must contain NO LIGHT-EMITTING OBJECT in the final image. No glow. No bulb. No bright spot. No yellow point.
+- If you see a coach light fixture in the daytime photo, render that fixture as a dark silhouette — solid black or very dark gray glass with NO internal light. It must look like a switched-off lamp on a porch — a dark inert object.
+- DO NOT render any small bright point of light at coach-light height on either side of the front door, EVER, under any circumstances.
+- The two specific pixel regions to your left and right of the front door at approximately head-height must be DARK in the final image — darker than the surrounding wall.
+- The wall behind these positions can be softly lit (from ground uplights below) but the coach light fixture itself, and the air directly around it, must be completely dark.
+- Self-check before finalizing: scan the area immediately beside the front door at head height. If you see ANY small bright spot, yellow glow, or warm point of light there — REMOVE IT. That spot must be black or near-black.
+
+The same rule applies to:
+- Coach lights beside garage doors (the bulb position must contain no glow)
+- Coach lights between garage doors
+- Sconces anywhere on the home's exterior walls
+- Pendant lights under porch ceilings
+- Any lantern, lamp, or fixture mounted on the exterior wall of the home
+
+CORRECT rendering of an entry with coach lights:
+- Wall is softly warm from ground uplights below
+- Coach light fixtures are visible but appear DARK (off)
+- No glow emanates from the bulb area of any wall-mounted fixture
+- The lighting pattern shows light traveling UPWARD from the ground onto the wall, with NO point sources at fixture height
 
 GARAGE AREA:
 - Garage doors must be DARK
