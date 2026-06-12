@@ -11,12 +11,13 @@
 
 Pulled from Google Search Console (Performance → last 3 months → Web). These five pages get lots of Google impressions but sit just off page one. For each, we identified the exact search term (query) it should target, then rewrote the page to match.
 
-You do **not** need to understand SEO to do this. For each page below, make these four edits:
+You do **not** need to understand SEO to do this. For each page below, make these five edits:
 
 1. **Title tag** — the page's SEO title (in WordPress this is usually the "SEO Title" field in Yoast/Rank Math, *not* the visible heading).
-2. **H1** — the big visible headline at the top of the page.
-3. **Add a section** — paste the provided paragraph into the page body (near the top, below the hero/intro). Adjust wording so it reads naturally with what's already there; don't delete good existing content.
-4. **Add 5 internal links** — inside the body text, link the exact words shown ("anchor text") to the listed URL.
+2. **Meta description** — the gray snippet under the title in Google results (the "Meta Description" field in Yoast/Rank Math). Doesn't affect ranking, but improves click-through.
+3. **H1** — the big visible headline at the top of the page.
+4. **Add a section** — paste the provided paragraph into the page body (near the top, below the hero/intro). Adjust wording so it reads naturally with what's already there; don't delete good existing content.
+5. **Add 5 internal links** — inside the body text, link the exact words shown ("anchor text") to the listed URL.
 
 **Link tips:** Use the exact anchor words shown. Make them real in-body text links, not buttons or "click here."
 
@@ -41,6 +42,11 @@ You do **not** need to understand SEO to do this. For each page below, make thes
 **Title tag:**
 ```
 Cincinnati Audio Visual Company | Home & Commercial AV | Phantom Sound
+```
+
+**Meta description** (the gray snippet under the title in Google — in the SEO "Meta Description" field):
+```
+Phantom Sound is Cincinnati's custom audio visual company — home theater, sound systems, conference rooms & outdoor audio. Serving Cincinnati, Mason & Dayton.
 ```
 
 **H1 (the main headline):**
@@ -73,6 +79,11 @@ Cincinnati's Custom Audio Visual Company
 Cincinnati Video Conference Rooms & Conferencing Systems | Phantom Sound
 ```
 
+**Meta description:**
+```
+Video conference room installation in Cincinnati & Dayton — Zoom Rooms, Teams Rooms, LED video walls & hybrid conferencing built to just work. Get a quote today.
+```
+
 **H1:**
 ```
 Cincinnati Video Conference Room Systems
@@ -100,6 +111,11 @@ Cincinnati Video Conference Room Systems
 **Title tag:**
 ```
 Sound System Installation in Cincinnati | Whole-Home Audio | Phantom Sound
+```
+
+**Meta description:**
+```
+Professional sound system installation in Cincinnati — whole-home audio, multi-room music, home theater & commercial sound. Serving Cincinnati, Mason & Loveland.
 ```
 
 **H1:**
@@ -131,6 +147,11 @@ Sound System Installation in Cincinnati
 Golf Simulator Installation in Cincinnati | Custom Builds | Phantom Sound
 ```
 
+**Meta description:**
+```
+Custom golf simulator installation in Cincinnati — launch monitors, impact screens, projectors & full room automation. Book a consultation with Phantom Sound.
+```
+
 **H1:**
 ```
 Golf Simulator Installation in Cincinnati
@@ -158,6 +179,11 @@ Golf Simulator Installation in Cincinnati
 **Title tag:**
 ```
 Outdoor Speakers & Landscape Audio in Cincinnati | Phantom Sound
+```
+
+**Meta description:**
+```
+Outdoor speakers & landscape audio installation in Cincinnati, Mason & Loveland. Weatherproof, even sound across your whole yard. Get a free quote from Phantom Sound.
 ```
 
 **H1:**
