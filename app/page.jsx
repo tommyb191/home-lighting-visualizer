@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Sparkles, Download, Share2, Loader2, ArrowRight, Mail, Phone, User, Home, MoveHorizontal } from 'lucide-react';
+import { Upload, Sparkles, Download, Share2, Loader2, ArrowRight, Mail, User, Home, MoveHorizontal } from 'lucide-react';
 
 const QUOTE_URL = 'https://phantomsound.com/start-a-project/';
 
@@ -9,7 +9,7 @@ export default function HomeLightingVisualizer() {
   const [step, setStep] = useState('landing');
   const [uploadedImage, setUploadedImage] = useState(null);
   const [generatedImage, setGeneratedImage] = useState(null);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+  const [formData, setFormData] = useState({ name: '', email: '' });
   const [errors, setErrors] = useState({});
   const [sliderPos, setSliderPos] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -71,7 +71,6 @@ export default function HomeLightingVisualizer() {
     if (!formData.name.trim()) errs.name = 'Required';
     if (!formData.email.trim()) errs.email = 'Required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errs.email = 'Please enter a valid email';
-    if (!formData.phone.trim()) errs.phone = 'Required';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -87,7 +86,6 @@ export default function HomeLightingVisualizer() {
           image: uploadedImage,
           name: formData.name,
           email: formData.email,
-          phone: formData.phone,
         }),
       });
       const data = await res.json();
@@ -159,7 +157,7 @@ export default function HomeLightingVisualizer() {
     setStep('landing');
     setUploadedImage(null);
     setGeneratedImage(null);
-    setFormData({ name: '', email: '', phone: '' });
+    setFormData({ name: '', email: '' });
     setErrors({});
     setSliderPos(50);
   };
@@ -317,7 +315,6 @@ export default function HomeLightingVisualizer() {
               <div className="space-y-5">
                 <Field icon={<User className="w-4 h-4" />} label="Name" value={formData.name} onChange={(v) => setFormData({ ...formData, name: v })} error={errors.name} />
                 <Field icon={<Mail className="w-4 h-4" />} label="Email" type="email" value={formData.email} onChange={(v) => setFormData({ ...formData, email: v })} error={errors.email} />
-                <Field icon={<Phone className="w-4 h-4" />} label="Phone" type="tel" value={formData.phone} onChange={(v) => setFormData({ ...formData, phone: v })} error={errors.phone} />
               </div>
 
               <button
