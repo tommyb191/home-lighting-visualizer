@@ -134,11 +134,253 @@ CRITICAL CONSTRAINTS:
 - Warm color temperature (2700K-3000K) for all landscape lighting
 - Restrained, tasteful, high-end — NEVER theatrical, theme-park, Las Vegas, Christmas-display, or commercial-floodlight aesthetic`;
 
+// ============================================================
+// POST-PROCESSING: Coach Light Hotspot Removal
+// ============================================================
+// The Gemini model frequently fails to keep coach lights dark, especially
+// the lanterns flanking the front door. This function detects small bright
+// warm hotspots in the typical coach-light positions on the home and dims
+// them to blend with the surrounding wall.
+//
+// Approach:
+// 1. Decode the generated image into raw pixels
+// 2. Compute a "hotspot" mask: pixels that are saturated warm yellow/orange
+//    AND surrounded by darker pixels (i.e., isolated bright points, not
+//    large washes of light)
+// 3. Restrict the mask to vertical bands where coach lights typically sit
+//    (middle horizontal third + extreme left/right thirds for garage areas)
+// 4. For each masked pixel, blend toward the average color of nearby
+//    non-hotspot pixels — effectively painting over the hotspot with the
+//    surrounding dark wall color
+// 5. Re-encode and return
+
+async function dimCoachLightHotspots(imageBuffer) {
+  // Lazy import sharp; if it fails for any reason, just return the original
+  let sharp;
+  try {
+    sharp = (await import('sharp')).default;
+  } catch (err) {
+    console.warn('Sharp not available — skipping coach light post-processing', err.message);
+    return imageBuffer;
+  }
+
+  try {
+    const img = sharp(imageBuffer);
+    const metadata = await img.metadata();
+    const { width, height } = metadata;
+    if (!width || !height) return imageBuffer;
+
+    // Extract raw RGB pixels
+    const { data, info } = await img
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    const channels = info.channels; // 4 (RGBA)
+    const pixels = new Uint8ClampedArray(data); // mutable copy
+
+    // ===== Build hotspot mask =====
+    // A pixel is a "hotspot candidate" if:
+    //   - It is bright (luminance > 200)
+    //   - It is warm (R > G > B with R-B difference significant)
+    //   - It is NOT inside a large wash (we'll filter that next)
+
+    const isHotspotCandidate = new Uint8Array(width * height);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = (y * width + x) * channels;
+        const r = pixels[idx];
+        const g = pixels[idx + 1];
+        const b = pixels[idx + 2];
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        const warm = r > g && g > b && (r - b) > 30;
+        if (lum > 200 && warm) {
+          isHotspotCandidate[y * width + x] = 1;
+        }
+      }
+    }
+
+    // ===== Region restriction =====
+    // Coach lights live in predictable vertical zones:
+    //   - Front door: roughly the middle 50% of the image width
+    //     at vertical positions between 30% and 70% from the top
+    //   - Garage: outer 30% of the width on either side, between
+    //     35% and 70% from the top
+    // We only process candidates in these zones.
+    //
+    // We also EXCLUDE the bottom 25% of the image (plantings/ground
+    // are allowed to have warm uplight glow) and the top 15% (sky).
+
+    const zoneMask = new Uint8Array(width * height);
+    const yMin = Math.floor(height * 0.25);
+    const yMax = Math.floor(height * 0.75);
+    for (let y = yMin; y < yMax; y++) {
+      for (let x = 0; x < width; x++) {
+        // Allow processing across the full width (covers door + garages)
+        zoneMask[y * width + x] = 1;
+      }
+    }
+
+    // ===== Isolated-spot filter =====
+    // A real ground-uplight wash covers many pixels in a broad area.
+    // A coach light glow is a small, isolated cluster of bright pixels
+    // surrounded by darker wall. We use a simple test: for each
+    // candidate pixel, sample pixels in a ring at radius ~40px. If
+    // most of those ring pixels are DARK (lum < 130), this is an
+    // isolated hotspot. If many are bright, it's part of a larger
+    // wash and we leave it alone.
+
+    const RING_RADIUS = Math.max(20, Math.floor(Math.min(width, height) * 0.025));
+    const ringOffsets = [];
+    const samples = 16;
+    for (let i = 0; i < samples; i++) {
+      const angle = (i / samples) * 2 * Math.PI;
+      const dx = Math.round(Math.cos(angle) * RING_RADIUS);
+      const dy = Math.round(Math.sin(angle) * RING_RADIUS);
+      ringOffsets.push({ dx, dy });
+    }
+
+    const finalMask = new Uint8Array(width * height);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const i = y * width + x;
+        if (!isHotspotCandidate[i] || !zoneMask[i]) continue;
+
+        // Sample ring
+        let darkCount = 0;
+        let totalCount = 0;
+        for (const { dx, dy } of ringOffsets) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+          const nIdx = (ny * width + nx) * channels;
+          const r = pixels[nIdx];
+          const g = pixels[nIdx + 1];
+          const b = pixels[nIdx + 2];
+          const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+          if (lum < 130) darkCount++;
+          totalCount++;
+        }
+        // If at least 50% of the ring is dark, this is an isolated
+        // hotspot — flag it for dimming
+        if (totalCount > 0 && darkCount / totalCount >= 0.5) {
+          finalMask[i] = 1;
+        }
+      }
+    }
+
+    // ===== Dilate the mask =====
+    // Grow the mask by a few pixels so we cover the full hotspot
+    // including its bloom/halo, not just the brightest core.
+    const DILATION = Math.max(15, Math.floor(Math.min(width, height) * 0.02));
+    const dilated = new Uint8Array(width * height);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (!finalMask[y * width + x]) continue;
+        // Mark a square around this pixel
+        const x0 = Math.max(0, x - DILATION);
+        const x1 = Math.min(width - 1, x + DILATION);
+        const y0 = Math.max(0, y - DILATION);
+        const y1 = Math.min(height - 1, y + DILATION);
+        for (let yy = y0; yy <= y1; yy++) {
+          for (let xx = x0; xx <= x1; xx++) {
+            // Use circular distance for a soft round mask
+            const dx = xx - x;
+            const dy = yy - y;
+            if (dx * dx + dy * dy <= DILATION * DILATION) {
+              dilated[yy * width + xx] = 1;
+            }
+          }
+        }
+      }
+    }
+
+    // ===== Compute replacement color =====
+    // For each masked pixel, we want to replace it with the average
+    // color of nearby NON-masked, non-bright pixels — i.e., the dark
+    // wall surrounding the hotspot. Sample at a larger radius outside
+    // the dilated mask.
+    const SAMPLE_RADIUS = DILATION + 30;
+    let totalSampleR = 0;
+    let totalSampleG = 0;
+    let totalSampleB = 0;
+    let sampleCount = 0;
+
+    // Sample a thin ring just outside each masked region for a local
+    // average. To keep this O(N) we just sample ~500 random pixels
+    // OUTSIDE the dilated mask but in the zone.
+    for (let attempt = 0; attempt < 2000 && sampleCount < 500; attempt++) {
+      const x = Math.floor(Math.random() * width);
+      const y = yMin + Math.floor(Math.random() * (yMax - yMin));
+      const i = y * width + x;
+      if (dilated[i]) continue; // skip masked
+      const idx = i * channels;
+      const r = pixels[idx];
+      const g = pixels[idx + 1];
+      const b = pixels[idx + 2];
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      if (lum > 140) continue; // skip bright areas (wall washes)
+      totalSampleR += r;
+      totalSampleG += g;
+      totalSampleB += b;
+      sampleCount++;
+    }
+
+    let replR = 30, replG = 22, replB = 18; // dark warm fallback
+    if (sampleCount >= 50) {
+      replR = Math.round(totalSampleR / sampleCount);
+      replG = Math.round(totalSampleG / sampleCount);
+      replB = Math.round(totalSampleB / sampleCount);
+    }
+
+    // ===== Apply mask =====
+    // For each masked pixel, blend toward the replacement color.
+    // Use a soft falloff so the edges of the dimmed area aren't
+    // sharply visible.
+    let pixelsDimmed = 0;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const i = y * width + x;
+        if (!dilated[i]) continue;
+        const idx = i * channels;
+
+        // Compute blend strength based on original luminance — brighter
+        // pixels get fully replaced; dimmer pixels at the mask edge get
+        // partial replacement.
+        const r = pixels[idx];
+        const g = pixels[idx + 1];
+        const b = pixels[idx + 2];
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        const strength = Math.max(0.5, Math.min(1.0, (lum - 120) / 130));
+
+        pixels[idx]     = Math.round(r * (1 - strength) + replR * strength);
+        pixels[idx + 1] = Math.round(g * (1 - strength) + replG * strength);
+        pixels[idx + 2] = Math.round(b * (1 - strength) + replB * strength);
+        pixelsDimmed++;
+      }
+    }
+
+    console.log(`Coach light post-processing: dimmed ${pixelsDimmed} pixels (${((pixelsDimmed / (width * height)) * 100).toFixed(2)}% of image)`);
+
+    // Re-encode as JPEG (smaller for email) at high quality
+    const output = await sharp(Buffer.from(pixels), {
+      raw: { width, height, channels }
+    })
+      .jpeg({ quality: 90 })
+      .toBuffer();
+
+    return output;
+  } catch (err) {
+    console.error('Post-processing error, returning original:', err);
+    return imageBuffer;
+  }
+}
+
 export async function POST(req) {
   try {
-    const { image, name, email, phone } = await req.json();
+    const { image, name, email } = await req.json();
 
-    if (!image || !name || !email || !phone) {
+    if (!image || !name || !email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -180,7 +422,22 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Image generation failed' }, { status: 500 });
     }
 
-    const generatedDataUrl = `data:${generatedMimeType};base64,${generatedBase64}`;
+    // === Post-process: dim coach light hotspots ===
+    // Gemini frequently fails to keep coach lights dark. This step
+    // detects bright isolated hotspots in typical coach-light positions
+    // and blends them into the surrounding dark wall.
+    let processedBase64 = generatedBase64;
+    let processedMimeType = generatedMimeType;
+    try {
+      const inputBuf = Buffer.from(generatedBase64, 'base64');
+      const cleanedBuf = await dimCoachLightHotspots(inputBuf);
+      processedBase64 = cleanedBuf.toString('base64');
+      processedMimeType = 'image/jpeg';
+    } catch (err) {
+      console.error('Post-processing failed, using original Gemini output:', err);
+    }
+
+    const generatedDataUrl = `data:${processedMimeType};base64,${processedBase64}`;
 
     // Try to send emails and capture any errors so we can see them
     let emailDebug = { attempted: false, customerSent: false, businessSent: false, error: null };
@@ -188,11 +445,10 @@ export async function POST(req) {
       emailDebug = await sendEmails({
         name,
         email,
-        phone,
         originalImageBase64: imageData,
         originalMimeType: mimeType,
-        generatedImageBase64: generatedBase64,
-        generatedMimeType,
+        generatedImageBase64: processedBase64,
+        generatedMimeType: processedMimeType,
       });
     } catch (err) {
       console.error('EMAIL ERROR:', err);
@@ -210,7 +466,6 @@ export async function POST(req) {
 async function sendEmails({
   name,
   email,
-  phone,
   originalImageBase64,
   originalMimeType,
   generatedImageBase64,
@@ -302,7 +557,6 @@ async function sendEmails({
   <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px;">
     <tr><td style="padding: 10px 0; border-bottom: 1px solid #e2e8f0; width: 100px; color: #64748b;">Name</td><td style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;"><strong>${escapeHtml(name)}</strong></td></tr>
     <tr><td style="padding: 10px 0; border-bottom: 1px solid #e2e8f0; color: #64748b;">Email</td><td style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
-    <tr><td style="padding: 10px 0; border-bottom: 1px solid #e2e8f0; color: #64748b;">Phone</td><td style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;"><a href="tel:${escapeHtml(phone)}">${escapeHtml(phone)}</a></td></tr>
   </table>
   <p style="font-size: 14px; color: #475569;">Both the original photo and the generated nighttime preview are attached.</p>
   <div style="margin-top: 30px; padding: 16px; background: #f1f5f9; border-radius: 6px; font-size: 14px; color: #475569;">
@@ -315,7 +569,7 @@ async function sendEmails({
         from: `Lead Bot <${fromEmail}>`,
         to: businessEmail,
         replyTo: email,
-        subject: `🏡 New lead: ${name} (${phone})`,
+        subject: `🏡 New lead: ${name}`,
         html: leadEmailHtml,
         attachments: [
           {
