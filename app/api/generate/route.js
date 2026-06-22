@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { Resend } from 'resend';
+import crypto from 'crypto';
 
 export const maxDuration = 60;
 
@@ -137,7 +138,7 @@ CRITICAL CONSTRAINTS:
 
 export async function POST(req) {
   try {
-    const { image, name, email } = await req.json();
+    const { image, name, email, eventId, clickId } = await req.json();
 
     if (!image || !name || !email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -149,6 +150,14 @@ export async function POST(req) {
     }
     const mimeType = base64Match[1];
     const imageData = base64Match[2];
+
+    // Report the Lead to Nextdoor's Conversions API the moment we have a valid
+    // submission — BEFORE the AI render — so a render failure never costs us a
+    // lead. Shares the client pixel's eventId for dedup. Fire-and-forget: a
+    // tracking failure must never break the render or the email.
+    reportNextdoorLead({ email, eventId, clickId }).catch((err) =>
+      console.error('Nextdoor CAPI Lead error:', err)
+    );
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -339,6 +348,56 @@ async function sendEmails({
   }
 
   return debug;
+}
+
+// Server-side Lead via Nextdoor Conversions API.
+// POST https://ads.nextdoor.com/v2/api/conversions/track (Bearer token).
+// Matched on the hashed email + the ndclid click id; deduped against the client
+// pixel by the shared event_id (and data_source_id = pixel id). The app has no
+// phone field, so we send email + click_id (Nextdoor needs at least one of
+// hashed_email / hashed_phone / click_id).
+async function reportNextdoorLead({ email, eventId, clickId }) {
+  const token = process.env.NEXTDOOR_CAPI_TOKEN;
+  const pixelId = process.env.NEXT_PUBLIC_NEXTDOOR_PIXEL_ID;
+
+  if (!token || !pixelId) {
+    console.warn(
+      'Nextdoor CAPI not configured (NEXTDOOR_CAPI_TOKEN / NEXT_PUBLIC_NEXTDOOR_PIXEL_ID) — skipping server-side Lead; client pixel still covers tracking'
+    );
+    return;
+  }
+
+  // PII must be SHA-256 hashed and normalized per Nextdoor's spec.
+  const customer = {};
+  if (email) customer.email = sha256(String(email).trim().toLowerCase());
+  if (clickId) customer.click_id = clickId; // ndclid — sent un-hashed
+
+  const body = {
+    event_name: 'lead',
+    action_source: 'website',
+    event_id: eventId || crypto.randomUUID(),
+    event_time_epoch: Math.floor(Date.now() / 1000),
+    data_source_id: pixelId,
+    customer,
+  };
+
+  const res = await fetch('https://ads.nextdoor.com/v2/api/conversions/track', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    console.error('Nextdoor CAPI Lead failed:', res.status, detail);
+  }
+}
+
+function sha256(value) {
+  return crypto.createHash('sha256').update(value).digest('hex');
 }
 
 function escapeHtml(s) {
