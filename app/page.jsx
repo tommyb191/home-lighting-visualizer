@@ -15,6 +15,28 @@ export default function HomeLightingVisualizer() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
   const sliderRef = useRef(null);
+  // One shared event_id per submission (reused across render retries) plus a
+  // flag so the Nextdoor Lead pixel fires at most once per submission.
+  const submissionRef = useRef({ eventId: null, leadFired: false });
+
+  // Capture the Nextdoor ad-click id (ndclid) on entry and stash it so it
+  // survives the multi-step upload flow, then travels with the Lead event.
+  useEffect(() => {
+    try {
+      const clickId = new URLSearchParams(window.location.search).get('ndclid');
+      if (clickId) sessionStorage.setItem('nd_click_id', clickId);
+    } catch (_) {
+      /* sessionStorage unavailable — attribution is best-effort */
+    }
+  }, []);
+
+  const getClickId = () => {
+    try {
+      return sessionStorage.getItem('nd_click_id') || undefined;
+    } catch (_) {
+      return undefined;
+    }
+  };
 
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
@@ -77,6 +99,26 @@ export default function HomeLightingVisualizer() {
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
+
+    // The lead is the contact info + photo we already have — fire the Nextdoor
+    // Lead conversion now, NOT after the AI render, so a render failure can
+    // never cost us a reported lead. A single event_id ties this client pixel
+    // to the server-side CAPI Lead so Nextdoor dedupes them into one conversion.
+    if (!submissionRef.current.eventId) {
+      submissionRef.current.eventId =
+        window.crypto?.randomUUID?.() ||
+        `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+    const eventId = submissionRef.current.eventId;
+    const clickId = getClickId();
+
+    // Pixel event names are UPPERCASE ('LEAD'); the CAPI side uses lowercase
+    // ('lead'). Both carry the same event_id so Nextdoor dedupes them to one.
+    if (!submissionRef.current.leadFired && typeof window.ndp === 'function') {
+      window.ndp('track', 'LEAD', { event_id: eventId });
+      submissionRef.current.leadFired = true;
+    }
+
     setStep('processing');
     try {
       const res = await fetch('/api/generate', {
@@ -86,6 +128,8 @@ export default function HomeLightingVisualizer() {
           image: uploadedImage,
           name: formData.name,
           email: formData.email,
+          eventId,
+          clickId,
         }),
       });
       const data = await res.json();
@@ -160,6 +204,7 @@ export default function HomeLightingVisualizer() {
     setFormData({ name: '', email: '' });
     setErrors({});
     setSliderPos(50);
+    submissionRef.current = { eventId: null, leadFired: false };
   };
 
   return (
